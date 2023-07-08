@@ -1,7 +1,7 @@
 import React from "react";
 import useSWR from "swr";
+import { Card } from "react-bootstrap/Card";
 import Error from "next/error";
-import Card from "react-bootstrap/Card";
 
 export default function ArtworkCardDetail({ objectID }) {
   const { data, error } = useSWR(
