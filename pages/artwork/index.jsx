@@ -7,7 +7,7 @@
  *  Name: Jason Shin
  *  Student ID: 111569216
  *  Date: Jul 21, 2023
- *  Deploy Link:
+ *  Deploy Link: https://glittering-liger-ec86c3.netlify.app/
  ******************************************************************************/
 
 import { useRouter } from "next/router";
