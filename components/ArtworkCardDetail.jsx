@@ -1,12 +1,32 @@
-import React from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
-import { Card } from "react-bootstrap/Card";
+import { Button, Card } from "react-bootstrap";
 import Error from "next/error";
+import { favouritesAtom } from "@/store";
+import { useAtom } from "jotai";
 
 export default function ArtworkCardDetail({ objectID }) {
-  const { data, error } = useSWR(
-    `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`
+  const [favouritesList, setFavouritesList] = useAtom(favouritesAtom);
+  const [showAdded, setShowAdded] = useState(
+    favouritesList.includes(objectID) ? true : false
   );
+  const { data, error } = useSWR(
+    objectID
+      ? `https://collectionapi.metmuseum.org/public/collection/v1/objects/${objectID}`
+      : null
+  );
+
+  const favouritesClicked = () => {
+    if (showAdded) {
+      setFavouritesList((favouritesList) =>
+        favouritesList.filter((fav) => fav != objectID)
+      );
+      setShowAdded(false);
+    } else {
+      setFavouritesList((favouritesList) => [...favouritesList, objectID]);
+      setShowAdded(true);
+    }
+  };
 
   if (error) {
     return <Error statusCode={404} />;
@@ -15,81 +35,88 @@ export default function ArtworkCardDetail({ objectID }) {
       return null;
     } else {
       return (
-        <Card style={{ width: "40rem" }}>
-          {data.primaryImageSmall && (
-            <Card.Img variant="top" src={data.primaryImage} />
-          )}
-          <Card.Body>
-            {data.title ? (
-              <Card.Title>{data.title}</Card.Title>
-            ) : (
-              <Card.Title>N/A</Card.Title>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Card style={{ width: "40rem" }}>
+            {data.primaryImageSmall && (
+              <Card.Img variant="top" src={data.primaryImage} />
             )}
-            <Card.Text>
-              {data.objectDate ? (
-                <p>
-                  <strong>Date: </strong>
-                  {data.objectDate}
-                </p>
+            <Card.Body>
+              {data.title ? (
+                <Card.Title>{data.title}</Card.Title>
               ) : (
-                <p>N/A</p>
+                <Card.Title>N/A</Card.Title>
               )}
-              {data.classification ? (
-                <p>
-                  <strong>Classification:</strong>
-                  {data.classification}
-                </p>
-              ) : (
-                <p>N/A</p>
-              )}
-              {data.medium ? (
-                <p>
-                  <strong>Medium: </strong>
-                  {data.medium}
-                </p>
-              ) : (
-                <p>N/A</p>
-              )}
-              <br />
-              <br />
-              {data.artistDisplayName ? (
-                <span>
+              <Card.Text>
+                {data.objectDate ? (
                   <p>
-                    <strong>Artist: </strong>
-                    {data.artistDisplayName}
+                    <b>Date: </b>
+                    {data.objectDate}
                   </p>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {data.classification ? (
                   <p>
-                    <a
-                      href={data.artistWikidata_URL}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      wiki
-                    </a>
+                    <b>Classification: </b>
+                    {data.classification}
                   </p>
-                </span>
-              ) : (
-                <p>N/A</p>
-              )}
-              {data.creditLine ? (
-                <p>
-                  <strong>Credit Line: </strong>
-                  {data.creditLine}
-                </p>
-              ) : (
-                <p>N/A</p>
-              )}
-              {data.dimensions ? (
-                <p>
-                  <strong>Dimensions: </strong>
-                  {data.dimensions}
-                </p>
-              ) : (
-                <p>N/A</p>
-              )}
-            </Card.Text>
-          </Card.Body>
-        </Card>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {data.medium ? (
+                  <p>
+                    <b>Medium: </b>
+                    {data.medium}
+                  </p>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {data.artistDisplayName ? (
+                  <span>
+                    <p>
+                      <b>Artist: </b>
+                      {data.artistDisplayName}{" "}
+                      <a
+                        href={data.artistWikidata_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        (wiki)
+                      </a>
+                    </p>
+                  </span>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {data.creditLine ? (
+                  <p>
+                    <b>Credit Line: </b>
+                    {data.creditLine}
+                  </p>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {data.dimensions ? (
+                  <p>
+                    <b>Dimensions: </b>
+                    {data.dimensions}
+                  </p>
+                ) : (
+                  <p>N/A</p>
+                )}
+                {showAdded ? (
+                  <Button onClick={favouritesClicked} variant="primary">
+                    + Favourite (added)
+                  </Button>
+                ) : (
+                  <Button onClick={favouritesClicked} variant="outline-primary">
+                    + Favourite
+                  </Button>
+                )}
+              </Card.Text>
+            </Card.Body>
+          </Card>
+        </div>
       );
     }
   }

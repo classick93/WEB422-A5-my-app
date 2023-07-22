@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/router";
+import { useAtom } from "jotai";
+import { searchHistoryAtom } from "@/store";
 
 export default function AdvancedSearch() {
-  const router = useRouter();
+  const [searchHistory, setSearchHistory] = useAtom(searchHistoryAtom);
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm({
     defaultValues: {
       searchQuery: "",
@@ -20,10 +23,27 @@ export default function AdvancedSearch() {
       isOnView: false,
     },
   });
+  const router = useRouter();
+
+  useEffect(() => {
+    let data = {
+      searchQuery: "",
+      searchBy: "title",
+      geoLocation: "",
+      medium: "",
+      isOnView: false,
+      isHighlight: false,
+    };
+
+    for (const prop in data) {
+      setValue(prop, data[prop]);
+    }
+  }, [setValue]);
 
   const submitForm = (data) => {
     let queryString = "";
-    queryString += `searchBy=${encodeURIComponent(data.searchBy)}`;
+
+    queryString += `${data.searchBy}=true`;
 
     if (data.geoLocation) {
       queryString += `&geoLocation=${encodeURIComponent(data.geoLocation)}`;
@@ -33,12 +53,15 @@ export default function AdvancedSearch() {
       queryString += `&medium=${encodeURIComponent(data.medium)}`;
     }
 
-    queryString += `&isOnView=${data.isOnView || false}`;
-    queryString += `&isHighlight=${data.isHighlight || false}`;
+    queryString += `&isOnView=${data.isOnView}`;
+
+    queryString += `&isHighlight=${data.isHighlight}`;
+
     queryString += `&q=${encodeURIComponent(data.searchQuery)}`;
 
+    setSearchHistory((current) => [...current, queryString]);
+
     router.push(`/artwork?${queryString}`);
-    reset({ searchQuery: "" });
   };
 
   return (
